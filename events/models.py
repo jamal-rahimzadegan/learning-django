@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Events(models.Model):
+class Event(models.Model):
     # 'id' is automatically handled by Django as the primary key
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -19,3 +19,21 @@ class Events(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class User(models.Model):
+    # The 'id' field (integer, primary key) is created automatically by Django,
+    # so you don't need to explicitly declare it unless you want to override it.
+
+    username = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    password = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "users"
+        managed = False
+
+    def __str__(self):
+        return self.username

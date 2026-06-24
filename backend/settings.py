@@ -55,7 +55,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -74,21 +74,29 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 # DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
+# "default": {
+#     "ENGINE": "django.db.backends.sqlite3",
+#     "NAME": BASE_DIR / "db.sqlite3",
+# }
 # }
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "social_event",  # The name of your Postgres DB
-        "USER": "postgres",  # Usually 'postgres' or your username
-        "PASSWORD": "890137257_a",  # Your Postgres password
-        "HOST": "localhost",  # Use 'localhost' if it's on your machine
+        "NAME": "django_admin_db",  # The name of your Postgres DB // real world we need to be carefull
+        "USER": "postgres",  # Usually 'postgres' or your username  // real world we need to be carefull
+        "PASSWORD": "890137257_a",  # Your Postgres password // real world we need to be carefull
+        "HOST": "localhost",
         "PORT": "5432",  # 5432 is the default Postgres port
-    }
+    },
+    "social_event": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "social_event",  # The name of your Postgres DB // real world we need to be carefull
+        "USER": "postgres",  # Usually 'postgres' or your username  // real world we need to be carefull
+        "PASSWORD": "890137257_a",  # Your Postgres password // real world we need to be carefull
+        "HOST": "localhost",
+        "PORT": "5432",  # 5432 is the default Postgres port
+    },
 }
 
 
@@ -127,3 +135,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
