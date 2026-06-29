@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Event List{% endblock %}
+
+{% block content %}
+ <h2>Event List</h2>
+
+ <ul>
+    {% for event in events %}
+     <li>
+        <a>{{ event.title }}</a> - {{ event.start_time }}
+        {% comment %} <a href="{% url 'event_detail' event.id %}">{{ event.title }}</a> - {{ event.start_time }} {% endcomment %}
+     </li>
+    {% empty %}
+     <li>No events available.</li>
+    {% endfor %}
+ </ul>
+  
+
+  
+{% endblock %}
+

@@ -1,7 +1,11 @@
+from asyncio import Event
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
-from .forms import EventForm
+from events.forms import EventForm
+
+from .models import Event
 
 
 def create_event(request):
@@ -20,3 +24,8 @@ def create_event(request):
     else:
         form = EventForm()
     return render(request, "events/pages/create_event.html", {"form": form})
+
+
+def event_list(request):
+    all_events = Event.objects.all()
+    return render(request, "events/pages/event_list.html", {"events": all_events})
