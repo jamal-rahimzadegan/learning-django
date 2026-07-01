@@ -17,14 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
-admin.site.site_header = "Social event" 
-admin.site.site_title = "Social event"  
+admin.site.site_header = "Social event"
+admin.site.site_title = "Social event"
 admin.site.index_title = "Welcome to Social event Admin Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(
-        "events/", include("events.urls")
-    ),  # This forwards requests to your events app
+    path("events/", include("events.urls")),
+    path("", RedirectView.as_view(url="/events/", permanent=True)),
 ]

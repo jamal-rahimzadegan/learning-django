@@ -6,10 +6,9 @@
  <h2>Event List</h2>
 
  <ul>
-    {% for event in events %}
+    {% for event in events %} 
      <li>
-        <a>{{ event.title }}</a> - {{ event.start_time }}
-        {% comment %} <a href="{% url 'event_detail' event.id %}">{{ event.title }}</a> - {{ event.start_time }} {% endcomment %}
+        <a href="{% url 'event_details' event.id %}">{{ event.title }}</a> - {{ event.start_time }}
      </li>
     {% empty %}
      <li>No events available.</li>

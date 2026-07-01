@@ -8,6 +8,10 @@ from events.forms import EventForm
 from .models import Event
 
 
+def index(request):
+    return render(request, "events/pages/index.html")
+
+
 def create_event(request):
     if request.method == "POST":
         form = EventForm(request.POST)
@@ -29,3 +33,8 @@ def create_event(request):
 def event_list(request):
     all_events = Event.objects.all()
     return render(request, "events/pages/event_list.html", {"events": all_events})
+
+
+def event_details(request, event_id):
+    event = Event.objects.get(id=event_id)
+    return render(request, "events/pages/event_details.html", {"event": event})
