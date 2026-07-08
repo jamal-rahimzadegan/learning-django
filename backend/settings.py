@@ -10,10 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -21,6 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -72,20 +81,22 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django_admin_db",  # The name of your Postgres DB // real world we need to be carefull
-        "USER": "postgres",  # Usually 'postgres' or your username  // real world we need to be carefull
-        "PASSWORD": "890137257_a",  # Your Postgres password // real world we need to be carefull
-        "HOST": "localhost",
-        "PORT": "5432",  # 5432 is the default Postgres port
+        "ENGINE": os.getenv("DEFAULT_DB_ENGINE"),
+        "NAME": os.getenv("DEFAULT_DB_NAME"),
+        "USER": os.getenv("DEFAULT_DB_USER"),
+        "PASSWORD": os.getenv("DEFAULT_DB_PASSWORD"),
+        "HOST": os.getenv("DEFAULT_DB_HOST"),
+        "PORT": os.getenv("DEFAULT_DB_PORT"),
     },
     "social_event": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "social_event",  # The name of your Postgres DB // real world we need to be carefull
-        "USER": "postgres",  # Usually 'postgres' or your username  // real world we need to be carefull
-        "PASSWORD": "890137257_a",  # Your Postgres password // real world we need to be carefull
-        "HOST": "localhost",
-        "PORT": "5432",  # 5432 is the default Postgres port
+        "ENGINE": os.getenv(
+            "DEFAULT_DB_ENGINE",
+        ),
+        "NAME": os.getenv("SOCIAL_EVENT_DB_NAME"),
+        "USER": os.getenv("SOCIAL_EVENT_DB_USER"),
+        "PASSWORD": os.getenv("SOCIAL_EVENT_DB_PASSWORD"),
+        "HOST": os.getenv("SOCIAL_EVENT_DB_HOST"),
+        "PORT": os.getenv("SOCIAL_EVENT_DB_PORT"),
     },
 }
 
