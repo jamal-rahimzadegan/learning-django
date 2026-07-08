@@ -2,6 +2,7 @@ from asyncio import Event
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.views.decorators.cache import cache_page
 
 from apps.events.forms import EventForm
 
@@ -30,8 +31,11 @@ def create_event(request):
     return render(request, "events/pages/create_event.html", {"form": form})
 
 
+@cache_page(60 * 15)
 def event_list(request):
     all_events = Event.objects.all()
+    # A simple print statement to prove when the view is actually running
+    print("Fetching events from the database and rendering template...")
     return render(request, "events/pages/event_list.html", {"events": all_events})
 
 
