@@ -25,6 +25,6 @@ admin.site.index_title = "Welcome to Social event Admin Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("events/", include("events.urls")),
+    path("events/", include("apps.events.urls")),
     path("", RedirectView.as_view(url="/events/", permanent=True)),
 ]

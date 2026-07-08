@@ -3,7 +3,7 @@ from asyncio import Event
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
-from events.forms import EventForm
+from apps.events.forms import EventForm
 
 from .models import Event
 
