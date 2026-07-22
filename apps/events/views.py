@@ -8,9 +8,10 @@ from django.views.decorators.cache import cache_page
 from apps.events.forms import EventForm
 
 from .models import Event
-
+from .tasks import process_heavy_task
 
 def index(request):
+    process_heavy_task.delay(123)  # Offloads execution immediately
     return render(request, "events/pages/index.html")
 
 
