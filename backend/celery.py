@@ -2,7 +2,7 @@ import os
 
 from celery import Celery
 
-# Replace 'myproject' with your actual Django project directory name
+# Replace 'backend' with your actual Django project directory name
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
 app = Celery("backend")
