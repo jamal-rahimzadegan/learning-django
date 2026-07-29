@@ -4,3 +4,9 @@ node_modules/
 backend/__pycache__/
 *.py[cod]
 *$py.class
+
+# Celery schedule and process files
+celerybeat-schedule*
+celerybeat.pid
+*.pid
+*.rdb
