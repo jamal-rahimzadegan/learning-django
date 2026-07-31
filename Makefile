@@ -4,7 +4,7 @@ HOST ?= 127.0.0.1
 REDIS_PORT ?= 6379
 
 # Declare all phony targets (non-file task shortcuts)
-.PHONY: start start-prod dev migrate worker beat redis-start redis-stop redis-check
+.PHONY: start start-prod requirements install dev migrate worker beat redis-start redis-stop redis-check install
 
 # Local Development Server (npm start equivalent)
 start:
@@ -13,6 +13,14 @@ start:
 # Production Server (Business Standard)
 start-prod:
 	gunicorn myproject.wsgi:application --bind $(HOST):$(PORT) --workers 3
+
+# Save current installed packages to requirements.txt
+requirements:
+	pip freeze > requirements.txt
+
+# Install packages from requirements.txt
+install:
+	pip install -r requirements.txt
 
 # Shortcut to apply migrations before starting
 dev: migrate start
