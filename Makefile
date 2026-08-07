@@ -4,51 +4,41 @@ HOST ?= 127.0.0.1
 REDIS_PORT ?= 6379
 
 # Declare all phony targets (non-file task shortcuts)
-.PHONY: start start-prod requirements install dev migrate worker beat redis-start redis-stop redis-check install
+.PHONY: start start-prod requirements install dev migrate worker beat redis-start redis-stop redis-check install docker-build docker-run
 
-# Local Development Server (npm start equivalent)
 start:
 	python manage.py runserver $(HOST):$(PORT)
-
-# Production Server (Business Standard)
 start-prod:
 	gunicorn myproject.wsgi:application --bind $(HOST):$(PORT) --workers 3
-
-# Save current installed packages to requirements.txt
 requirements:
 	pip freeze > requirements.txt
-
-# Install packages from requirements.txt
 install:
 	pip install -r requirements.txt
-
-# Shortcut to apply migrations before starting
 dev: migrate start
 
+# Migration Management
 migrate:
 	python manage.py makemigrations
 	python manage.py migrate
 
-# Celery Management
 
-# Start a worker to execute tasks
+# Celery Management
 celery-worker:
 	celery -A backend worker -l info
-
-# Start the Beat scheduler for timed/periodic tasks
 celery-beat:
 	celery -A backend beat -l info
 
 # REDIS Management
-
-# Start Redis background service
 redis-start:
 	brew services start redis
-
-# Stop Redis background service
 redis-stop:
 	brew services stop redis
-
-# Ping Redis to test connection (returns PONG if working)
 redis-check:
 	redis-cli ping
+
+
+# Docker Management
+docker-build:
+	docker build -t social-event-app .
+docker-run:
+	docker run -p 8000:8000 social-event-app
