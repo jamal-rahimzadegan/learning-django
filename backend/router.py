@@ -30,15 +30,13 @@ class ExternalDatabaseRouter:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         """
-        STRICT RULE: Never run migrations on the social_event database.
+        Allow migrations only for the correct app on the correct database.
         """
-        # Block ANY migrations from hitting your pristine social_event database
-        if db == self.target_db:
-            return False
-
-        # Block Django from trying to create 'events' tables in the default database
         if app_label == self.target_app:
+            # If the app is 'events', only allow migrations on the 'social_event' db
+            return db == self.target_db
+        elif db == self.target_db:
+            # If the database is 'social_event', don't allow any other apps
             return False
-
-        # Allow Django to run its own internal migrations on the default DB
-        return True
+        # For any other app, allow migrations on the 'default' database
+        return None
