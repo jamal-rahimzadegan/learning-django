@@ -13,23 +13,25 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
-load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
-SECRET_KEY = os.getenv(
-    "SECRET_KEY", "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
-)
+# SECRET_KEY = "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
+# SECRET_KEY = os.getenv(
+#     "SECRET_KEY", "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
+# )
+
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv("DEBUG") == "1"
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -89,9 +91,7 @@ DATABASES = {
         "PORT": os.getenv("DEFAULT_DB_PORT"),
     },
     "social_event": {
-        "ENGINE": os.getenv(
-            "DEFAULT_DB_ENGINE",
-        ),
+       "ENGINE": os.getenv("SOCIAL_EVENT_DB_ENGINE"),
         "NAME": os.getenv("SOCIAL_EVENT_DB_NAME"),
         "USER": os.getenv("SOCIAL_EVENT_DB_USER"),
         "PASSWORD": os.getenv("SOCIAL_EVENT_DB_PASSWORD"),
@@ -152,12 +152,12 @@ DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # The '1' at the end is the Redis database number
+       "LOCATION": "redis://redis:6379/1",  # The '1' at the end is the Redis database number
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
     }
 }
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
