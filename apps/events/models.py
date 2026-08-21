@@ -15,7 +15,6 @@ class Event(models.Model):
 
     class Meta:
         db_table = "events"  # Important: Use your exact Postgres table name
-        managed = False  # Tells Django NOT to run migrations on this table since it already exists
 
     def __str__(self):
         return self.title
@@ -33,7 +32,6 @@ class User(models.Model):
 
     class Meta:
         db_table = "users"
-        managed = False
 
     def __str__(self):
         return self.username
