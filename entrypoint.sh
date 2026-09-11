@@ -14,6 +14,7 @@ python manage.py migrate --database=default
 python manage.py migrate --database=social_event
 
 # Automate superuser creation on the default database
+# Do not create user here it's not a good practice to create superuser in entrypoint.sh, but for the sake of this example, we will do it.
 python manage.py shell -c "
 from django.contrib.auth import get_user_model;
 User = get_user_model();
