@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Wait until Postgres is ready to take queries
 echo "Waiting for PostgreSQL..."
 while ! nc -z db 5432; do
   sleep 0.1
@@ -10,9 +9,19 @@ echo "PostgreSQL is up and running."
 # Generate missing migration files
 python manage.py makemigrations events
 
-# Run migrations automatically for BOTH databases on startup
+# Run migrations for BOTH databases
 python manage.py migrate --database=default
 python manage.py migrate --database=social_event
 
-# Start Django app
+# Automate superuser creation on the default database
+python manage.py shell -c "
+from django.contrib.auth import get_user_model;
+User = get_user_model();
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin')
+    print('Superuser admin created successfully.')
+else:
+    print('Superuser admin already exists.')
+"
+
 exec "$@"
