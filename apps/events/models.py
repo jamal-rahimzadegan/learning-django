@@ -20,10 +20,7 @@ class Event(models.Model):
         return self.title
 
 
-class User(models.Model):
-    # The 'id' field (integer, primary key) is created automatically by Django,
-    # so you don't need to explicitly declare it unless you want to override it.
-
+class AppUser(models.Model):
     username = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
     password = models.CharField(max_length=255)
@@ -32,6 +29,7 @@ class User(models.Model):
 
     class Meta:
         db_table = "users"
+        app_label = "events"
 
     def __str__(self):
         return self.username
