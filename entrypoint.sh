@@ -10,7 +10,7 @@ echo "PostgreSQL is up and running."
 python manage.py makemigrations events
 
 # Run migrations for BOTH databases
-python manage.py migrate --database=default
+python manage.py migrate --databse=default
 python manage.py migrate --database=social_event
 
 # Automate superuser creation on the default database

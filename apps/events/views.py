@@ -4,8 +4,10 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import cache_page
+from rest_framework import viewsets
 
 from apps.events.forms import EventForm
+from apps.events.serializer import EventSerializer
 
 from .models import Event
 from .tasks import process_heavy_task
@@ -53,3 +55,16 @@ def event_details(request, event_id):
         print(f"Event {event_id} found in cache.")
 
     return render(request, "events/pages/event_details.html", {"event": event})
+
+
+
+
+# API ViewSet for Event model
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    # 1. Define where the view gets its data from
+    queryset = Event.objects.all()
+    
+    # 2. Tell the view which serializer to use for formatting the data
+    serializer_class = EventSerializer
