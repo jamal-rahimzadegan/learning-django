@@ -1,5 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
+from utils.route import custom_404_view
 from .views import EventViewSet
 from . import views
 
@@ -15,3 +17,4 @@ urlpatterns = [
     path("new/", views.create_event, name="create_event"),
     path("api/", include(router.urls)),
 ]
+handler404 = custom_404_view
