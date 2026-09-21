@@ -1,6 +1,7 @@
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.views.generic import RedirectView
+from rest_framework.routers import DefaultRouter
 
 
 from drf_spectacular.views import (
@@ -9,9 +10,15 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from apps.events.views import EventViewSet
+
 admin.site.site_header = "Social event"
 admin.site.site_title = "Social event"
 admin.site.index_title = "Welcome to Social event Admin Portal"
+
+
+router = DefaultRouter()
+router.register(r"", EventViewSet, basename="")  # Define more for every endpoint
 
 
 basic = [
@@ -35,6 +42,7 @@ api_spec = [
 events = [
     path("events/", include("apps.events.urls")),
     path("", RedirectView.as_view(url="/events/", permanent=True)),
+    re_path(r"^api/(?P<version>[^/]+)/events/", include(router.urls)),
 ]
 
 urlpatterns = basic + events + api_spec
