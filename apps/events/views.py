@@ -12,6 +12,7 @@ from apps.events.serializer import EventSerializer
 from .models import Event
 from .tasks import process_heavy_task
 
+
 def index(request):
     process_heavy_task.delay(123)  # Offloads execution immediately
     return render(request, "events/pages/index.html")
@@ -35,7 +36,7 @@ def create_event(request):
     return render(request, "events/pages/create_event.html", {"form": form})
 
 
-@cache_page(60 * 15) #caching it for 15 minutes
+@cache_page(60 * 15)  # caching it for 15 minutes
 def event_list(request):
     all_events = Event.objects.all()
     # A simple print statement to prove when the view is actually running
@@ -57,14 +58,10 @@ def event_details(request, event_id):
     return render(request, "events/pages/event_details.html", {"event": event})
 
 
-
-
 # API ViewSet for Event model
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    # 1. Define where the view gets its data from
     queryset = Event.objects.all()
-    
-    # 2. Tell the view which serializer to use for formatting the data
+    # Here you can handle the version
     serializer_class = EventSerializer
