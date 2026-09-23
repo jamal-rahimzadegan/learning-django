@@ -24,6 +24,9 @@ endif
 start:
 	$(PYTHON) manage.py runserver $(HOST):$(PORT)
 
+test:
+	pytest -v
+
 start-prod:
 	gunicorn myproject.wsgi:application --bind $(HOST):$(PORT) --workers 3
 
