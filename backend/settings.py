@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.events", 
+    "apps.accounts", 
     'rest_framework',
     'drf_spectacular'
 ]

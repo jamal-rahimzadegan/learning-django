@@ -41,6 +41,7 @@ api_spec = [
 
 events = [
     path("events/", include("apps.events.urls")),
+    path("accounts/", include("apps.accounts.urls")),
     path("", RedirectView.as_view(url="/events/", permanent=True)),
     re_path(r"^api/(?P<version>[^/]+)/events/", include(router.urls)),
 ]
