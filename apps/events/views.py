@@ -5,19 +5,20 @@ from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
-
+from django.views.decorators.cache import never_cache
 from apps.events.forms import EventForm
 from apps.events.serializer import EventSerializer
 
 from .models import Event
 from .tasks import process_heavy_task
 
-
+@never_cache
 def index(request):
     process_heavy_task.delay(123)  # Offloads execution immediately
     return render(request, "events/pages/index.html")
 
 
+@never_cache
 def create_event(request):
     if request.method == "POST":
         form = EventForm(request.POST)
@@ -36,7 +37,8 @@ def create_event(request):
     return render(request, "events/pages/create_event.html", {"form": form})
 
 
-@cache_page(60 * 15)  # caching it for 15 minutes
+# @cache_page(60 * 15)  # caching it for 15 minutes
+@never_cache
 def event_list(request):
     all_events = Event.objects.all()
     # A simple print statement to prove when the view is actually running
@@ -44,6 +46,7 @@ def event_list(request):
     return render(request, "events/pages/event_list.html", {"events": all_events})
 
 
+@never_cache
 def event_details(request, event_id):
     cache_key = f"event_{event_id}"
     event = cache.get(cache_key)
