@@ -1,0 +1,79 @@
+/* 1. Use a more-intuitive box-sizing model */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* 2. Remove default margin and padding from all elements */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* 3. Set core body defaults */
+body {
+    min-height: 100vh;
+    line-height: 1.5;
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 4. Make media elements responsive and remove bottom space */
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* 5. Inherit fonts for form controls */
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+/* 6. Avoid text overflows */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    overflow-wrap: break-word;
+}
+
+/* 7. Remove list styles (optional, but highly recommended) */
+ul,
+ol {
+    list-style: none;
+}
+
+
+
+header {
+    background-color: #999;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 0 10px 10px;
+}
+
+
+main {
+    flex: 1;
+    min-height: 100vh;
+}
+
+footer {
+    background-color: #999;
+    color: white;
+    padding: 1rem;
+    margin-top: 1rem;
+
+}
