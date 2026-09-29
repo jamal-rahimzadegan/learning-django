@@ -1,6 +1,6 @@
 # Version control
 .git
-.gitignore
+../.gitignore
 .gitattributes
 .svn
 .hg
@@ -36,8 +36,8 @@ out/
 *.swo
 
 # Environment variables & secrets (CRITICAL for security)
-.env
-.env.*
+backend/.env
+backend/.env.local
 !.env.example
 *.pem
 *.key
@@ -102,6 +102,6 @@ env/
 venv/
 
 # Environment secrets
-.env
-.env.*
+backend/.env
+backend/.env.local
 !.env.example

@@ -14,7 +14,7 @@ services:
 
   django:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
     container_name: backend
     env_file:

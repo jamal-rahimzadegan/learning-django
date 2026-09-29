@@ -10,7 +10,7 @@ A simple Django project for managing social events. This application demonstrate
 
 ## Project Structure
 
-- `backend/`: The main Django project directory.
+- ``: The main Django project directory.
 - `events/`: The Django app for managing events.
 - `templates/`: Contains the HTML templates.
 - `static/`: Contains static files (CSS, JS, images).
