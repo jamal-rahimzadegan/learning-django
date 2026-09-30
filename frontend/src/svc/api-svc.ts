@@ -2,15 +2,15 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL  || '';
-const API_VERSION = import.meta.env.VITE_API_VERSION  || '';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_VERSION = import.meta.env.VITE_API_VERSION || '';
 
 async function createRequest<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
   const { body, headers, ...customConfig } = options;
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('token');
 
   const config: RequestInit = {
     method: options.method || 'GET',
@@ -23,7 +23,9 @@ async function createRequest<T>(
     ...customConfig,
   };
 
-  const response = await fetch(`${BASE_URL}/${API_VERSION}${endpoint}`, config);
+  const version = endpoint.includes('accounts') ? '' : `/${API_VERSION}`;
+
+  const response = await fetch(`${BASE_URL}${version}${endpoint}`, config);
 
   if (response.status === 204) return {} as T;
 

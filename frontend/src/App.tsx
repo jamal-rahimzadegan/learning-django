@@ -1,35 +1,21 @@
-import './App.css'
-import {Fragment, useEffect, useState} from "react";
-import {type Event, getEvents} from "./api/events.ts";
+import './App.css';
+import { Route, Routes } from 'react-router-dom';
+import Layout from './layout/layout.tsx';
+import Login from './pages/login.tsx';
+import Home from './pages/home.tsx';
+import About from './pages/about.tsx';
+import { checkIsLoggedIn } from './api/user.ts';
 
 export default function App() {
-    const [events, setEvents] = useState<Event[]>()
+  const isLoggedIn = checkIsLoggedIn();
 
-    const formatEvents = async () => {
-        try {
-            const tempEvents = await getEvents()
-            setEvents(tempEvents)
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    useEffect(() => {
-        formatEvents()
-    }, [])
-
-    return (
-        <>
-            <h1>Social event app frontend</h1>
-
-        {events?.map((event) => (
-            <div key={event.id} style={{width:'100%',textAlign:'left',gap:5,display:"flex",flexDirection:'column'}}>
-                <h2>{event.title}</h2>
-                <p>{event.description}</p>
-                <hr width={'100%'}/>
-            </div>
-        ))}
-        </>
-    )
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        {isLoggedIn ? null : <Route path="/login" element={<Login />} />}
+      </Route>
+    </Routes>
+  );
 }
-

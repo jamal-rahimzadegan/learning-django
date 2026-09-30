@@ -10,7 +10,7 @@ interface Event {
     start_time: string | null;
     price: number;
     capacity: number | null;
-    id:string
+    id: string
 }
 
 
