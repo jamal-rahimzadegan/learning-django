@@ -10,7 +10,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from apps.events.views import EventViewSet
+from apps.events.views import EventsViewSet
 
 admin.site.site_header = "Social event"
 admin.site.site_title = "Social event"
@@ -18,7 +18,7 @@ admin.site.index_title = "Welcome to Social event Admin Portal"
 
 
 router = DefaultRouter()
-router.register(r"", EventViewSet, basename="")  # Define more for every endpoint
+router.register(r"", EventsViewSet, basename="")  # Define more for every endpoint
 
 
 basic = [

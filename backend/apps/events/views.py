@@ -3,14 +3,15 @@ from asyncio import Event
 from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import redirect, render
-from django.views.decorators.cache import cache_page
-from rest_framework import viewsets
 from django.views.decorators.cache import never_cache
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+
 from apps.events.forms import EventForm
 from apps.events.serializer import EventSerializer
-
 from .models import Event
 from .tasks import process_heavy_task
+
 
 @never_cache
 def index(request):
@@ -62,9 +63,8 @@ def event_details(request, event_id):
 
 
 # API ViewSet for Event model
-
-
-class EventViewSet(viewsets.ModelViewSet):
+class EventsViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     # Here you can handle the version
     serializer_class = EventSerializer
+    permission_classes = [AllowAny] # Will make it publicly available (includes details)
