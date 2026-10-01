@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.events.models import Event
+from .models import Event, AppUser  # Adjust import based on your User model location
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:

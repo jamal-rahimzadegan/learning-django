@@ -15,9 +15,7 @@ async function login(paylod: {
     const res = await apiSvc.post<LoginRes>('/accounts/login', {
       ...paylod,
     });
-
-    localStorage.setItem('token', res.access);
-    localStorage.setItem('refreshToken', res.refresh);
+    setTokens(res.access, res.refresh);
     return true;
   } catch (e) {
     return false;
@@ -26,9 +24,18 @@ async function login(paylod: {
 
 async function refreshToken() {
   const refreshToken = localStorage.getItem('refreshToken');
-  return await apiSvc.post<unknown>('/accounts/refresh', {
+
+  if (!refreshToken) return;
+
+  const res = await apiSvc.post<unknown>('/accounts/refresh', {
     refresh: refreshToken,
   });
+  //   TODO: implement
+}
+
+function setTokens(token: string, refreshToken: string) {
+  localStorage.setItem('token', token);
+  localStorage.setItem('refreshToken', refreshToken);
 }
 
 function checkIsLoggedIn() {

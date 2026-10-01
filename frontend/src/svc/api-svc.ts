@@ -1,3 +1,5 @@
+import { refreshToken } from '../api/user.ts';
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
 }
@@ -11,6 +13,7 @@ async function createRequest<T>(
 ): Promise<T> {
   const { body, headers, ...customConfig } = options;
   const token = localStorage.getItem('token');
+  const tokenRefresh = localStorage.getItem('refreshToken');
 
   const config: RequestInit = {
     method: options.method || 'GET',
@@ -25,7 +28,12 @@ async function createRequest<T>(
 
   const version = endpoint.includes('accounts') ? '' : `/${API_VERSION}`;
 
-  const response = await fetch(`${BASE_URL}${version}${endpoint}`, config);
+  let response = await fetch(`${BASE_URL}${version}${endpoint}`, config);
+
+  if (response.status === 401 && tokenRefresh) {
+    await refreshToken();
+    await createRequest(endpoint, options);
+  }
 
   if (response.status === 204) return {} as T;
 

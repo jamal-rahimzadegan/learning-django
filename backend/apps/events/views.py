@@ -67,4 +67,4 @@ class EventsViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     # Here you can handle the version
     serializer_class = EventSerializer
-    permission_classes = [AllowAny] # Will make it publicly available (includes details)
+    permission_classes = [AllowAny]  # Will make it publicly available (includes GET/POST/PUT/UPDATE)

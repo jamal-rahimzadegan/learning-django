@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { login } from '../api/user.ts';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,7 +10,6 @@ export default function Login() {
   });
 
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
 
   // Simple Validation Logic
   const validate = () => {
@@ -44,10 +43,8 @@ export default function Login() {
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      setSubmitted(false);
     } else {
       setErrors({});
-      setSubmitted(true);
       const isLoggedIn = await login(formData);
       if (isLoggedIn) navigate('/', { replace: true });
     }
@@ -65,13 +62,6 @@ export default function Login() {
             Please enter your details to sign in
           </p>
         </div>
-
-        {/* Success Alert */}
-        {submitted && (
-          <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 border border-green-200">
-            Successfully logged in!
-          </div>
-        )}
 
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>

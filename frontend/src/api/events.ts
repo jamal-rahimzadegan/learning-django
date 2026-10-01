@@ -1,27 +1,22 @@
-import {apiSvc} from "../svc/api-svc.ts";
+import { apiSvc } from '../svc/api-svc.ts';
 
-interface Event {
-    title: string;
-    description: string | null;
-    organizer_id: number;
-    status: string;
-    created_at: string;
-    location: string | null;
-    start_time: string | null;
-    price: number;
-    capacity: number | null;
-    id: string
+interface SocialEvent {
+  title: string;
+  description: string | null;
+  organizer_id: number;
+  status: string;
+  created_at: string;
+  location: string | null;
+  start_time: string | null;
+  price: number;
+  capacity: number | null;
+  id: string;
 }
 
+const getEvents = async <T>(id?: string) => {
+  return await apiSvc.get<T>(`/events/${id ?? ''}`);
+};
 
-const getEvents = async () => {
-    return await apiSvc.get<Event[]>('/events')
-}
+export type { SocialEvent };
 
-export type {
-    Event
-}
-
-export {
-    getEvents
-}
+export { getEvents };
