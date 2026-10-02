@@ -2,7 +2,7 @@ import { apiSvc } from '../svc/api-svc.ts';
 
 interface User {}
 
-interface LoginRes {
+interface TokenRes {
   access: string;
   refresh: string;
 }
@@ -12,7 +12,7 @@ async function login(paylod: {
   password: string;
 }): Promise<boolean> {
   try {
-    const res = await apiSvc.post<LoginRes>('/accounts/login', {
+    const res = await apiSvc.post<TokenRes>('/accounts/login', {
       ...paylod,
     });
     setTokens(res.access, res.refresh);
@@ -24,13 +24,16 @@ async function login(paylod: {
 
 async function refreshToken() {
   const refreshToken = localStorage.getItem('refreshToken');
-
   if (!refreshToken) return;
 
-  const res = await apiSvc.post<unknown>('/accounts/refresh', {
-    refresh: refreshToken,
-  });
-  //   TODO: implement
+  await apiSvc
+    .post<TokenRes>('/accounts/refresh', {
+      refresh: refreshToken,
+    })
+    .then((data) => setTokens(data.access, data.refresh))
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 function setTokens(token: string, refreshToken: string) {

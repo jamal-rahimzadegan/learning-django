@@ -30,10 +30,7 @@ async function createRequest<T>(
 
   let response = await fetch(`${BASE_URL}${version}${endpoint}`, config);
 
-  if (response.status === 401 && tokenRefresh) {
-    await refreshToken();
-    await createRequest(endpoint, options);
-  }
+  if (response.status === 401 && tokenRefresh) await refreshToken();
 
   if (response.status === 204) return {} as T;
 
