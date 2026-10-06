@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
+from django_ratelimit.decorators import ratelimit
 
 from apps.events.forms import EventForm
 from apps.events.serializer import EventSerializer
@@ -14,6 +15,7 @@ from .tasks import process_heavy_task
 
 
 @never_cache
+@ratelimit(key='user_or_ip', rate='30/m') #30 req/minute
 def index(request):
     process_heavy_task.delay(123)  # Offloads execution immediately
     return render(request, "events/pages/index.html")
