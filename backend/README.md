@@ -39,7 +39,7 @@ A simple Django project for managing social events. This application demonstrate
     This project requires two PostgreSQL databases.
     - Create a database named `django_admin_db` for Django's internal use (auth, admin, etc.).
     - Create a second database named `social_event`. This database must contain pre-existing `users` and `events` tables that match the schemas in `events/models.py`.
-    - Update the database credentials in `backend/settings.py` to match your local setup.
+    - Update the database credentials in `backend/settings/base.py` to match your local setup.
 
 5.  **Run Migrations:**
     Run migrations to set up the tables in your `default` (`django_admin_db`) database. The router configuration will prevent migrations from running on the `social_event` database.
