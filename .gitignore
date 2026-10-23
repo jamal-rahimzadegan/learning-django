@@ -2,7 +2,7 @@
 # Environments & Secrets
 # ==========================================
 .env
-.env.*
+backend/.env.local
 !.env.example
 *.env
 env/
