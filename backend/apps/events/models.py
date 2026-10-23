@@ -33,3 +33,21 @@ class AppUser(models.Model):
 
     def __str__(self):
         return self.username
+
+
+
+class SupportMessage(models.Model):
+    SENDER_CHOICES = [
+        ('user', 'User'),
+        ('agent', 'Support Agent'),
+    ]
+
+    sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'support_messages'
+
+    def __str__(self):
+        return f"{self.sender}: {self.text[:30]}"

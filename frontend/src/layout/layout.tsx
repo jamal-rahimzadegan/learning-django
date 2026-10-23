@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { checkIsLoggedIn } from '../api/user.ts';
+import Support from '../components/support.tsx';
 
 export default function Layout() {
   const isLoggedIn = checkIsLoggedIn();
@@ -54,18 +55,10 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
-
+      <Support />
       <footer className="border-t bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-gray-500 sm:flex-row sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} Social Events</p>
-          <div className="flex gap-4">
-            <Link to="/privacy" className="hover:text-gray-900">
-              Privacy
-            </Link>
-            <Link to="/terms" className="hover:text-gray-900">
-              Terms
-            </Link>
-          </div>
         </div>
       </footer>
     </div>

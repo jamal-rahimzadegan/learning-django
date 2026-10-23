@@ -1,11 +1,8 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
-
-from datetime import timedelta
-
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -25,25 +22,36 @@ REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "apps.events", 
+    "apps.events",
     "apps.accounts",
     "corsheaders",
     'rest_framework',
     'drf_spectacular',
     "rest_framework_simplejwt.token_blacklist",
+    'channels',
 ]
+
+# Tell Django to use ASGI instead of WSGI
+ASGI_APPLICATION = 'backend.asgi.application'
+
+# Channel layer configuration (In-Memory for dev/pet project)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -90,7 +98,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("DEFAULT_DB_ENGINE"),
@@ -101,7 +108,7 @@ DATABASES = {
         "PORT": os.getenv("DEFAULT_DB_PORT"),
     },
     "social_event": {
-       "ENGINE": os.getenv("SOCIAL_EVENT_DB_ENGINE"),
+        "ENGINE": os.getenv("SOCIAL_EVENT_DB_ENGINE"),
         "NAME": os.getenv("SOCIAL_EVENT_DB_NAME"),
         "USER": os.getenv("SOCIAL_EVENT_DB_USER"),
         "PASSWORD": os.getenv("SOCIAL_EVENT_DB_PASSWORD"),
@@ -109,7 +116,6 @@ DATABASES = {
         "PORT": os.getenv("SOCIAL_EVENT_DB_PORT"),
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -129,7 +135,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -140,7 +145,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
@@ -180,7 +184,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 ]
 
-CORS_ALLOW_CREDENTIALS = True # For a real app, explicitly list the frontend origins.
+CORS_ALLOW_CREDENTIALS = True  # For a real app, explicitly list the frontend origins.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]

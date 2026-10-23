@@ -1,5 +1,5 @@
 import pytest
-from utils.to_upper_case import to_upper_case
+from core.utils.to_upper_case import to_upper_case
 
 
 @pytest.mark.parametrize(

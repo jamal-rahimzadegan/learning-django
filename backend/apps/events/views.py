@@ -10,8 +10,12 @@ from django_ratelimit.decorators import ratelimit
 
 from apps.events.forms import EventForm
 from apps.events.serializer import EventSerializer
-from .models import Event
+from .models import Event, SupportMessage
 from .tasks import process_heavy_task
+
+from datetime import datetime
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 
 @never_cache
@@ -62,6 +66,41 @@ def event_details(request, event_id):
         print(f"Event {event_id} found in cache.")
 
     return render(request, "events/pages/event_details.html", {"event": event})
+
+
+# Socket
+def support(request):
+    # return render(request, "events/pages/support.html")
+    if request.method == 'POST':
+        agent_text = request.POST.get('message', '').strip()
+
+        if agent_text:
+            # 1. Save agent message to Database
+            SupportMessage.objects.create(sender='agent', text=agent_text)
+
+            # 2. Push message to WebSocket group
+            channel_layer = get_channel_layer()
+            payload = {
+                "id": int(datetime.now().timestamp() * 1000),
+                "text": agent_text,
+                "sender": "agent",
+                "timestamp": datetime.now().strftime("%I:%M %p")
+            }
+
+            async_to_sync(channel_layer.group_send)(
+                "chat_support_room",
+                {
+                    "type": "chat_message",
+                    "message_data": payload
+                }
+            )
+
+        return redirect(request.path)
+
+    # Load message history ordered chronologically
+    messages = SupportMessage.objects.order_by('created_at')
+    return render(request, "events/pages/support.html", {'messages': messages})
+
 
 
 # API ViewSet for Event model
