@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
-
+from django.conf import settings
 
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -44,6 +44,8 @@ events = [
     path("accounts/", include("apps.accounts.urls")),
     path("", RedirectView.as_view(url="/events/", permanent=True)),
     re_path(r"^api/(?P<version>[^/]+)/events/", include(router.urls)),
+path("__debug__/", include("debug_toolbar.urls"))
 ]
 
 urlpatterns = basic + events + api_spec
+

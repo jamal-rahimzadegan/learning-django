@@ -9,20 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env.local")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
-# SECRET_KEY = os.getenv(
-#     "SECRET_KEY", "django-insecure-af1=(edb-1=_(i^@o=378jdvzpbz(w%mi_1vfpu=21@1f#35h^"
-# )
-
-
 SECRET_KEY = os.getenv("SECRET_KEY")
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+INTERNAL_IPS = ["127.0.0.1"]
 
 # Application definition
 
@@ -41,6 +30,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     "rest_framework_simplejwt.token_blacklist",
     'channels',
+    "debug_toolbar",
 ]
 
 # Tell Django to use ASGI instead of WSGI
@@ -69,6 +59,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -183,7 +174,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173",
 
 ]
-
 CORS_ALLOW_CREDENTIALS = True  # For a real app, explicitly list the frontend origins.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -192,9 +182,7 @@ CORS_ALLOWED_ORIGINS = [
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
