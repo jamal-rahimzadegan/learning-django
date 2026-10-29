@@ -21,6 +21,10 @@ router = DefaultRouter()
 router.register(r"", EventsViewSet, basename="")  # Define more for every endpoint
 
 
+# It's for testing Sentry
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 basic = [
     path("admin/", admin.site.urls),
 ]
@@ -44,7 +48,9 @@ events = [
     path("accounts/", include("apps.accounts.urls")),
     path("", RedirectView.as_view(url="/events/", permanent=True)),
     re_path(r"^api/(?P<version>[^/]+)/events/", include(router.urls)),
-path("__debug__/", include("debug_toolbar.urls"))
+path("__debug__/", include("debug_toolbar.urls")),
+    path('sentry-debug/', trigger_error),
+
 ]
 
 urlpatterns = basic + events + api_spec

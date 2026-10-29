@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+import sentry_sdk
 
 from dotenv import load_dotenv
 
@@ -32,6 +33,14 @@ INSTALLED_APPS = [
     'channels',
     "debug_toolbar",
 ]
+
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    # To customize collected data (user info, request bodies, AI inputs/outputs),
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/
+    # data_collection={"user_info": False},
+)
 
 # Tell Django to use ASGI instead of WSGI
 ASGI_APPLICATION = 'backend.asgi.application'
