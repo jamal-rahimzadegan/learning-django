@@ -1,8 +1,8 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-import sentry_sdk
 
+import sentry_sdk
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     "debug_toolbar",
 ]
 
-
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     # To customize collected data (user info, request bodies, AI inputs/outputs),
@@ -64,7 +63,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    # "EXCEPTION_HANDLER": "utils.err-handler",
 }
 
 MIDDLEWARE = [
@@ -119,7 +117,6 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -137,29 +134,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = "/static/"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# Use a storage backend that appends a unique hash to filenames.
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  # The absolute path to the directory where collectstatic will collect static files for deployment.
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"  # Use a storage backend that appends a unique hash to filenames.
 
 DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
 
@@ -184,9 +169,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 ]
 CORS_ALLOW_CREDENTIALS = True  # For a real app, explicitly list the frontend origins.
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
