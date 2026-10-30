@@ -112,6 +112,7 @@ DATABASES = {
         "PASSWORD": os.getenv("SOCIAL_EVENT_DB_PASSWORD"),
         "HOST": os.getenv("SOCIAL_EVENT_DB_HOST"),
         "PORT": os.getenv("SOCIAL_EVENT_DB_PORT"),
+        "TEST": {"DEPENDENCIES": []},
     },
 }
 
