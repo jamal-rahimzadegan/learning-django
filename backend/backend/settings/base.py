@@ -1,74 +1,56 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-
-import sentry_sdk
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# ── Paths & env ──────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-load_dotenv(BASE_DIR / ".env.local")
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-INTERNAL_IPS = ["127.0.0.1"]
+load_dotenv(BASE_DIR / ".env")  # real env vars win (override=False by default)
 
-# Application definition
 
-INSTALLED_APPS = [
-    "daphne",
+def env_bool(name: str, default: bool = False) -> bool:
+    return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_list(name: str, default: str = "") -> list[str]:
+    return [v.strip() for v in os.getenv(name, default).split(",") if v.strip()]
+
+# ── Core ─────────────────────────────────────────────────────
+SECRET_KEY = os.environ["SECRET_KEY"]  # fail fast
+DEBUG = False
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
+ROOT_URLCONF = "backend.urls"
+ASGI_APPLICATION = "backend.asgi.application"
+WSGI_APPLICATION = "backend.wsgi.application"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ── Apps ─────────────────────────────────────────────────────
+DJANGO_APPS = [
+    "daphne",  # must come before staticfiles
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "apps.events",
-    "apps.accounts",
-    "corsheaders",
-    'rest_framework',
-    'drf_spectacular',
-    "rest_framework_simplejwt.token_blacklist",
-    'channels',
-    "debug_toolbar",
 ]
+THIRD_PARTY_APPS = [
+    "corsheaders",
+    "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
+    "channels",
+]
+LOCAL_APPS = [
+    "apps.accounts",
+    "apps.events",
+]
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-sentry_sdk.init(
-    dsn=os.getenv("SENTRY_DSN"),
-    # To customize collected data (user info, request bodies, AI inputs/outputs),
-    # see https://docs.sentry.io/platforms/python/data-management/data-collected/
-    # data_collection={"user_info": False},
-)
-
-# Tell Django to use ASGI instead of WSGI
-ASGI_APPLICATION = 'backend.asgi.application'
-
-# Channel layer configuration (In-Memory for dev/pet project)
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    },
-}
-
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ['v1', 'v2'],
-    'VERSION_PARAM': 'version',
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-}
-
+# ── Middleware ───────────────────────────────────────────────
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # before CommonMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -77,8 +59,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "backend.urls"
-
+# ── Templates ────────────────────────────────────────────────
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -94,8 +75,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
-
+# ── Database ─────────────────────────────────────────────────
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("DEFAULT_DB_ENGINE"),
@@ -115,9 +95,9 @@ DATABASES = {
         "TEST": {"DEPENDENCIES": []},
     },
 }
+DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+# ── Auth ─────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -133,49 +113,61 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+
+# ── i18n ─────────────────────────────────────────────────────
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+# ── Static files ─────────────────────────────────────────────
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"  # The absolute path to the directory where collectstatic will collect static files for deployment.
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"  # Use a storage backend that appends a unique hash to filenames.
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"},
+}
 
-DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
-
+# ── Redis / Cache / Celery ───────────────────────────────────
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
+        "LOCATION": f"{REDIS_URL}/1",
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
+CELERY_BROKER_URL = f"{REDIS_URL}/0"
+CELERY_RESULT_BACKEND = f"{REDIS_URL}/0"
 
-CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+# ── Channels ─────────────────────────────────────────────────
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
 
-]
-CORS_ALLOW_CREDENTIALS = True  # For a real app, explicitly list the frontend origins.
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
-
+# ── DRF / JWT / OpenAPI ──────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_VERSION': 'v1',
+    'ALLOWED_VERSIONS': ['v1', 'v2'],
+    'VERSION_PARAM': 'version',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # 1 min is very short outside debugging
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# ── CORS / CSRF ──────────────────────────────────────────────
+CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
