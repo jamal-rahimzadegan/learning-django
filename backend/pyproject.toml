@@ -55,12 +55,16 @@ dependencies = [
     "sentry-sdk>=2.73.0",
 ]
 
-[tool.pytest]
+[tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "backend.settings"
 python_files = ["test_*.py", "*_test.py", "tests.py"]
 pythonpath = [".", "apps", "utils"]
 django_find_project = true
-addopts = ["--reuse-db"]
+addopts = [
+  "--reuse-db",
+  "--tb=short",
+  "-q"
+]
 
 [tool.ruff]
 line-length = 88
