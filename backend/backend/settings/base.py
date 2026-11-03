@@ -44,6 +44,7 @@ LOCAL_APPS = [
     "apps.accounts",
     "apps.events",
 ]
+
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 # ── Middleware ───────────────────────────────────────────────
@@ -94,6 +95,7 @@ DATABASES = {
         "TEST": {"DEPENDENCIES": []},
     },
 }
+
 DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
 
 # ── Auth ─────────────────────────────────────────────────────
@@ -111,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 # ── i18n ─────────────────────────────────────────────────────
 LANGUAGE_CODE = "en-us"
@@ -142,7 +143,6 @@ CELERY_RESULT_BACKEND = f"{REDIS_URL}/0"
 
 # ── Channels ─────────────────────────────────────────────────
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
-
 
 # ── DRF / JWT / OpenAPI ──────────────────────────────────────
 REST_FRAMEWORK = {
