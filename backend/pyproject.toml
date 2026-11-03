@@ -56,7 +56,7 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "backend.settings"
+DJANGO_SETTINGS_MODULE = "backend.settings.test"
 python_files = ["test_*.py", "*_test.py", "tests.py"]
 pythonpath = [".", "apps", "utils"]
 django_find_project = true

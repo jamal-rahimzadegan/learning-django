@@ -5,7 +5,7 @@ from channels.auth import AuthMiddlewareStack
 
 from apps.events.urls import websocket_urlpatterns
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings.prod')
 
 django_asgi_app = get_asgi_application()
 

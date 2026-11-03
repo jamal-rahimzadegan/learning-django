@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 
 # ── Paths & env ──────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-load_dotenv(BASE_DIR / ".env")  # real env vars win (override=False by default)
+# Precedence: real env vars > .env.local > .env
+load_dotenv(BASE_DIR / ".env.local")
+load_dotenv(BASE_DIR / ".env")
 
 
 def env_bool(name: str, default: bool = False) -> bool:
