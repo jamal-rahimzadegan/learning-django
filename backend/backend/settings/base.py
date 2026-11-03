@@ -5,14 +5,11 @@ from dotenv import load_dotenv
 
 # ── Paths & env ──────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-# Precedence: real env vars > .env.local > .env
 load_dotenv(BASE_DIR / ".env.local")
 load_dotenv(BASE_DIR / ".env")
 
-
 def env_bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
-
 
 def env_list(name: str, default: str = "") -> list[str]:
     return [v.strip() for v in os.getenv(name, default).split(",") if v.strip()]
