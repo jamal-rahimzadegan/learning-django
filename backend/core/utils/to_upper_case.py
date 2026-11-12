@@ -1,4 +1,7 @@
-def to_upper_case(s):
-    if not s:
-        return s
-    return s.upper()
+def to_upper_case(string: str | None = None) -> str:
+    if not string:
+        return ""
+    if not string:
+        return string
+    return string.upper()
+

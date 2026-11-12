@@ -8,7 +8,7 @@ from core.utils.to_upper_case import to_upper_case
         ("hello", "HELLO"),
         ("Python 123", "PYTHON 123"),
         ("", ""),
-        (None, None),
+        (None, ""),
     ],
 )
 def test_to_upper_case(input_str, expected):
