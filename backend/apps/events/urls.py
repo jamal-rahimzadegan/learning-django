@@ -9,10 +9,15 @@ urlpatterns = [
     path("support/", views.support, name="support"),
     path("details/<int:event_id>/", views.event_details, name="event_details"),
     path("new/", views.create_event, name="create_event"),
+    path(
+        "create-checkout-session/",
+        views.CreateCheckoutSessionView.as_view(),
+        name="create-checkout-session",
+    ),
 ]
 
 websocket_urlpatterns = [
-re_path(r"^ws/support/$", consumers.SupportChatConsumer.as_asgi()),
+    re_path(r"^ws/support/$", consumers.SupportChatConsumer.as_asgi()),
 ]
 
 handler404 = custom_404_view

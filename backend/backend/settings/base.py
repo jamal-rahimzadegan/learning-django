@@ -22,6 +22,9 @@ ROOT_URLCONF = "backend.urls"
 ASGI_APPLICATION = "backend.asgi.application"
 WSGI_APPLICATION = "backend.wsgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+FRONTEND_URL = os.environ.get("FRONTEND_URL","")
 
 # ── Apps ─────────────────────────────────────────────────────
 DJANGO_APPS = [
@@ -159,7 +162,7 @@ REST_FRAMEWORK = {
     ],
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # 1 min is very short outside debugging
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1500),# adjust in real world
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,

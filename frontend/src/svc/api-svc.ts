@@ -2,6 +2,7 @@ import { refreshToken } from '../api/user.ts';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
+  hasVersion?: boolean;
 }
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -11,7 +12,7 @@ async function createRequest<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { body, headers, ...customConfig } = options;
+  const { body, headers, hasVersion = true, ...customConfig } = options;
   const token = localStorage.getItem('token');
   const tokenRefresh = localStorage.getItem('refreshToken');
 
@@ -26,9 +27,13 @@ async function createRequest<T>(
     ...customConfig,
   };
 
-  const version = endpoint.includes('accounts') ? '' : `/${API_VERSION}`;
+  const version = () => {
+    if (!hasVersion) return '';
+    if (endpoint.includes('accounts')) return '';
+    return `/${API_VERSION}`;
+  };
 
-  let response = await fetch(`${BASE_URL}${version}${endpoint}`, config);
+  let response = await fetch(`${BASE_URL}${version()}${endpoint}`, config);
 
   if (response.status === 401 && tokenRefresh) await refreshToken();
 

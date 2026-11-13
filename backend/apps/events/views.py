@@ -1,21 +1,24 @@
 from asyncio import Event
+from datetime import datetime
 
+import stripe
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
 from django_ratelimit.decorators import ratelimit
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.events.forms import EventForm
-from apps.events.serializer import EventSerializer
 from .models import Event, SupportMessage
+from .serializer import EventSerializer
 from .tasks import process_heavy_task
-
-from datetime import datetime
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 
 
 @never_cache
@@ -70,7 +73,6 @@ def event_details(request, event_id):
 
 # Socket
 def support(request):
-    # return render(request, "events/pages/support.html")
     if request.method == 'POST':
         agent_text = request.POST.get('message', '').strip()
 
@@ -100,6 +102,55 @@ def support(request):
     # Load message history ordered chronologically
     messages = SupportMessage.objects.order_by('created_at')
     return render(request, "events/pages/support.html", {'messages': messages})
+
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+class CreateCheckoutSessionView(APIView):
+    permission_classes = [IsAuthenticated]  # Testing only
+
+    def post(self, request):
+        try:
+            event_id = request.data.get("id")  # matches the key sent from React
+            if not event_id:
+                return Response(
+                    {"id": ["This field is required."]},
+                    status=400,
+                )
+            target_event = Event.objects.get(id=event_id)
+            
+            session = stripe.checkout.Session.create(
+                mode="payment",
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "eur",
+                            "product_data": {
+                                "name": target_event.title,
+                            },
+                            "unit_amount": target_event.price*100, # Price in cents for Stripe
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                success_url=(
+                    f"{settings.FRONTEND_URL}/payment/success"
+                    "?session_id={CHECKOUT_SESSION_ID}"
+                ),
+                cancel_url=(
+                    f"{settings.FRONTEND_URL}/payment/cancel"
+                ),
+            )
+
+            return Response({"url": session.url})
+
+        except stripe.StripeError as error:
+            return Response(
+                {"error": str(error)},
+                status=400,
+            )
+
 
 
 
