@@ -13,7 +13,7 @@ export default function Layout() {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
 
-    navigate(0);
+    navigate('/login');
   };
 
   return (

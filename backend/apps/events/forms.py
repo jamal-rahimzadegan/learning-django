@@ -1,13 +1,15 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from apps.events.models import Event
 
-from apps.events.models import Event, AppUser
-
-
+User = get_user_model()
 class EventForm(forms.ModelForm):
     # Create a dropdown field populated with users.
     # This field is not part of the Events model, so we define it here.
     organizer_user = forms.ModelChoiceField(
-        queryset=AppUser.objects.all(), label="Organizer", required=True
+        queryset=User.objects.all(),
+        label="Organizer",
+        required=True,
     )
 
     class Meta:

@@ -80,6 +80,7 @@ TEMPLATES = [
 
 # ── Database ─────────────────────────────────────────────────
 DATABASES = {
+    # TODO: move to .env
     "default": {
         "ENGINE": os.getenv("DEFAULT_DB_ENGINE"),
         "NAME": os.getenv("DEFAULT_DB_NAME"),
@@ -88,18 +89,7 @@ DATABASES = {
         "HOST": os.getenv("DEFAULT_DB_HOST"),
         "PORT": os.getenv("DEFAULT_DB_PORT"),
     },
-    "social_event": {
-        "ENGINE": os.getenv("SOCIAL_EVENT_DB_ENGINE"),
-        "NAME": os.getenv("SOCIAL_EVENT_DB_NAME"),
-        "USER": os.getenv("SOCIAL_EVENT_DB_USER"),
-        "PASSWORD": os.getenv("SOCIAL_EVENT_DB_PASSWORD"),
-        "HOST": os.getenv("SOCIAL_EVENT_DB_HOST"),
-        "PORT": os.getenv("SOCIAL_EVENT_DB_PORT"),
-        "TEST": {"DEPENDENCIES": []},
-    },
 }
-
-DATABASE_ROUTERS = ["backend.router.ExternalDatabaseRouter"]
 
 # ── Auth ─────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [

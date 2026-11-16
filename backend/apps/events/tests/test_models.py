@@ -1,6 +1,6 @@
 import pytest
 
-from apps.events.models import AppUser, Event, SupportMessage
+from apps.events.models import  Event, SupportMessage
 
 
 @pytest.mark.django_db(databases="__all__")
@@ -19,18 +19,6 @@ class TestModels:
         assert event.price == 20
         assert Event._meta.db_table == "events"
         assert str(event) == event.title
-
-    def test_app_user_creation(self):
-        user = AppUser.objects.create(
-            username="johndoe",
-            email="john@example.com",
-            password="hashed_password_here"
-        )
-        assert user.pk is not None
-        assert user.username == "johndoe"
-        assert user.email == "john@example.com"
-        assert AppUser._meta.db_table == "users"
-        assert AppUser._meta.app_label == "events"
 
     def test_support_msg(self):
         message = SupportMessage.objects.create(
