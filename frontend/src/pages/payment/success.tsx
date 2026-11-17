@@ -1,73 +1,33 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
+import { checkPaymentStatus } from '../../api/payment.ts';
 
-type TicketStatusResponse = {
-  ticket_id: string;
-  status: 'pending' | 'paid' | 'refunded';
-  event_title: string;
-};
+const MAX_ATTEMPTS = 6;
+const POLL_INTERVAL_MS = 1500;
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const queryClient = useQueryClient();
+  const queryKey = ['payment-status', sessionId];
 
-  const [ticket, setTicket] = useState<TicketStatusResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [timedOut, setTimedOut] = useState(false);
+  const { data: ticket, error } = useQuery({
+    queryKey,
+    queryFn: sessionId ? () => checkPaymentStatus(sessionId) : skipToken,
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' &&
+      query.state.dataUpdateCount < MAX_ATTEMPTS
+        ? POLL_INTERVAL_MS
+        : false,
+  });
 
-  useEffect(() => {
-    if (!sessionId) {
-      setError('Missing checkout session ID.');
-      return;
-    }
+  const timedOut =
+    (queryClient.getQueryState(queryKey)?.dataUpdateCount ?? 0) >=
+    MAX_ATTEMPTS;
 
-    let isCancelled = false;
-    let attempts = 0;
-    const maxAttempts = 6;
+  if (!sessionId) return <div>Missing checkout session ID.</div>;
 
-    const checkStatus = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/events/checkout-status/${sessionId}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error('Could not verify ticket status.');
-        }
-
-        const data: TicketStatusResponse = await res.json();
-        if (isCancelled) return;
-
-        setTicket(data);
-
-        if (data.status === 'pending') {
-          attempts += 1;
-          if (attempts < maxAttempts) {
-            setTimeout(checkStatus, 1500);
-          } else {
-            setTimedOut(true);
-          }
-        }
-      } catch (err) {
-        if (!isCancelled) {
-          setError(err instanceof Error ? err.message : 'Unexpected error.');
-        }
-      }
-    };
-
-    checkStatus();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [sessionId]);
-
-  if (error) return <div>{error}</div>;
+  if (error) return <div>{error.message}</div>;
 
   if (!ticket || (ticket.status === 'pending' && !timedOut)) {
     return <div>Confirming your payment with Stripe...</div>;

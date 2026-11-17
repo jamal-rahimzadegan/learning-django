@@ -42,6 +42,7 @@ class Ticket(models.Model):
         PENDING = "pending", "Pending"
         PAID = "paid", "Paid"
         REFUNDED = "refunded", "Refunded"
+        EXPIRED = "expired", "Expired"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
@@ -58,5 +59,7 @@ class Ticket(models.Model):
 
     class Meta:
         db_table = 'tickets'
-        indexes = [models.Index(fields=["user", "event"])]
-
+        indexes = [
+            models.Index(fields=["user", "event"]),
+            models.Index(fields=["event", "status"]),
+        ]

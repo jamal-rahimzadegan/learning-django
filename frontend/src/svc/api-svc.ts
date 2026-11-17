@@ -45,6 +45,7 @@ async function createRequest<T>(
     const errorMsg =
       data?.detail ||
       data?.message ||
+      data?.error ||
       `HTTP ${response.status}: ${response.statusText}`;
     throw new Error(errorMsg);
   }

@@ -1,4 +1,6 @@
-from datetime import datetime
+import time
+import uuid
+from datetime import datetime, timedelta
 
 import stripe
 from asgiref.sync import async_to_sync
@@ -9,6 +11,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -136,46 +139,85 @@ class CreateCheckoutSessionView(APIView):
 
     def post(self, request):
         event_id = request.data.get("id")
+
         if not event_id:
             return Response({"id": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
 
-        target_event = get_object_or_404(Event, id=event_id)
+        # lock the event row and reserve a PENDING ticket
+        with transaction.atomic():
+            try:
+                target_event = Event.objects.select_for_update().get(id=event_id)
+            except Event.DoesNotExist:
+                return Response({"detail": "Event not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            session = stripe.checkout.Session.create(
-                mode="payment",
-                customer_email=request.user.email,
-                client_reference_id=str(request.user.id),
-                metadata={
-                    "event_id": str(target_event.id),
-                    "user_id": str(request.user.id),
-                },
-                line_items=[
-                    {
-                        "price_data": {
-                            "currency": "eur",
-                            "product_data": {"name": target_event.title},
-                            "unit_amount": int(target_event.price * 100),
-                        },
-                        "quantity": 1,
-                    }
-                ],
-                success_url=f"{settings.FRONTEND_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{settings.FRONTEND_URL}/payment/cancel",
-            )
+            if target_event.capacity is not None:
+                cutoff = timezone.now() - timedelta(minutes=30)
+                active_tickets = (
+                    Ticket.objects.filter(event=target_event, status=Ticket.Status.PAID).count()
+                    + Ticket.objects.filter(
+                        event=target_event,
+                        status=Ticket.Status.PENDING,
+                        created_at__gte=cutoff,
+                    ).count()
+                )
 
-            Ticket.objects.create(
-                user=request.user,
-                event=target_event,
-                stripe_session_id=session.id,
-                status=Ticket.Status.PENDING,
-            )
+                if active_tickets >= target_event.capacity:
+                    return Response(
+                        {"error": "This event is sold out."},
+                        status=status.HTTP_409_CONFLICT,
+                    )
 
-            return Response({"url": session.url}, status=status.HTTP_201_CREATED)
+        return call_stripe(request,target_event)
 
-        except stripe.StripeError as error:
-            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+def call_stripe(request,target_event):
+    # Creating the ticket now to reserving the inventory slot before releasing the DB lock
+    ticket = Ticket.objects.create(
+        user=request.user,
+        event=target_event,
+        stripe_session_id=f"temp_{uuid.uuid4()}",  # Placeholder until Stripe responds
+        status=Ticket.Status.PENDING,
+    )
+
+    try:
+        # Stripe requires expires_at to be at least 30 minutes in the future
+        expires_at = int(time.time()) + (30 * 60)
+
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            expires_at=expires_at,
+            customer_email=request.user.email,
+            client_reference_id=str(request.user.id),
+            metadata={
+                "event_id": str(target_event.id),
+                "user_id": str(request.user.id),
+                "ticket_id": str(ticket.id),
+            },
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "eur",
+                        "product_data": {"name": target_event.title},
+                        "unit_amount": int(target_event.price * 100),
+                    },
+                    "quantity": 1,
+                }
+            ],
+            success_url=f"{settings.FRONTEND_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{settings.FRONTEND_URL}/payment/cancel",
+        )
+
+        ticket.stripe_session_id = session.id
+        ticket.save(update_fields=["stripe_session_id"])
+
+        return Response({"url": session.url}, status=status.HTTP_201_CREATED)
+
+    except stripe.StripeError as error:
+        # Release the reserved spot immediately if Stripe session creation fails
+        ticket.status = Ticket.Status.EXPIRED
+        ticket.save(update_fields=["status"])
+        return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
 @csrf_exempt
 @require_POST

@@ -16,10 +16,8 @@ export default function EventDetails() {
 
   const { isPending, mutateAsync: mutateCheckout } = useMutation({
     mutationFn: handleCheckout,
-    onSuccess: (res) => {
-      console.log('res: ', res);
-      return (window.location.href = res?.url);
-    },
+    onSuccess: (res) => (window.location.href = res?.url),
+    onError: (err) => alert(err.message),
   });
 
   const price = event?.price || 0;
