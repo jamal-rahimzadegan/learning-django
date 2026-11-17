@@ -14,6 +14,12 @@ urlpatterns = [
         views.CreateCheckoutSessionView.as_view(),
         name="create-checkout-session",
     ),
+path(
+    "checkout-status/<str:session_id>/",
+    views.CheckoutTicketStatusView.as_view(),
+    name="checkout-ticket-status",
+),
+    path("webhooks/stripe/", views.stripe_webhook, name="stripe-webhook")
 ]
 
 websocket_urlpatterns = [

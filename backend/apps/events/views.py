@@ -1,4 +1,3 @@
-from asyncio import Event
 from datetime import datetime
 
 import stripe
@@ -7,16 +6,20 @@ from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
-from django.shortcuts import redirect, render
+from django.db import transaction
+from django.http.response import HttpResponse
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.events.forms import EventForm
-from .models import Event, SupportMessage
+from .models import Event, SupportMessage, Ticket
 from .serializer import EventSerializer
 from .tasks import process_heavy_task
 
@@ -105,51 +108,128 @@ def support(request):
 
 
 
+
+
+class CheckoutTicketStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id: str):
+        ticket = get_object_or_404(
+            Ticket.objects.select_related("event"),
+            stripe_session_id=session_id,
+            user=request.user,  # Authorization check: prevents IDOR
+        )
+
+        return Response(
+            {
+                "ticket_id": str(ticket.id),
+                "status": ticket.status,
+                "event_title": ticket.event.title,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class CreateCheckoutSessionView(APIView):
-    permission_classes = [IsAuthenticated]  # Testing only
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        event_id = request.data.get("id")
+        if not event_id:
+            return Response({"id": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        target_event = get_object_or_404(Event, id=event_id)
+
         try:
-            event_id = request.data.get("id")  # matches the key sent from React
-            if not event_id:
-                return Response(
-                    {"id": ["This field is required."]},
-                    status=400,
-                )
-            target_event = Event.objects.get(id=event_id)
-            
             session = stripe.checkout.Session.create(
                 mode="payment",
+                customer_email=request.user.email,
+                client_reference_id=str(request.user.id),
+                metadata={
+                    "event_id": str(target_event.id),
+                    "user_id": str(request.user.id),
+                },
                 line_items=[
                     {
                         "price_data": {
                             "currency": "eur",
-                            "product_data": {
-                                "name": target_event.title,
-                            },
-                            "unit_amount": target_event.price*100, # Price in cents for Stripe
+                            "product_data": {"name": target_event.title},
+                            "unit_amount": int(target_event.price * 100),
                         },
                         "quantity": 1,
                     }
                 ],
-                success_url=(
-                    f"{settings.FRONTEND_URL}/payment/success"
-                    "?session_id={CHECKOUT_SESSION_ID}"
-                ),
-                cancel_url=(
-                    f"{settings.FRONTEND_URL}/payment/cancel"
-                ),
+                success_url=f"{settings.FRONTEND_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=f"{settings.FRONTEND_URL}/payment/cancel",
             )
 
-            return Response({"url": session.url})
+            Ticket.objects.create(
+                user=request.user,
+                event=target_event,
+                stripe_session_id=session.id,
+                status=Ticket.Status.PENDING,
+            )
+
+            return Response({"url": session.url}, status=status.HTTP_201_CREATED)
 
         except stripe.StripeError as error:
-            return Response(
-                {"error": str(error)},
-                status=400,
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+
+    if not sig_header:
+        return HttpResponse(status=400)
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload,
+            sig_header=sig_header,
+            secret=settings.STRIPE_WEBHOOK_SECRET,
+        )
+    except (ValueError, stripe.SignatureVerificationError):
+        return HttpResponse(status=400)
+
+    if event.type == "checkout.session.completed":
+        session = event.data.object
+
+        if session.payment_status == "paid":
+            _fulfill_checkout(session)
+
+    return HttpResponse(status=200)
+
+
+def _fulfill_checkout(session) -> None:
+    session_id = session.id
+    metadata = session.metadata or {}
+
+    with transaction.atomic():
+        ticket = (
+            Ticket.objects.select_for_update()
+            .filter(stripe_session_id=session_id)
+            .first()
+        )
+
+        if ticket:
+            if ticket.status == Ticket.Status.PAID:
+                return
+            ticket.status = Ticket.Status.PAID
+            ticket.save(update_fields=["status"])
+        else:
+            Ticket.objects.get_or_create(
+                stripe_session_id=session_id,
+                defaults={
+                    "user_id": metadata["user_id"],
+                    "event_id": metadata["event_id"],
+                    "status": Ticket.Status.PAID,
+                },
             )
+
 
 
 
@@ -160,3 +240,4 @@ class EventsViewSet(viewsets.ModelViewSet):
     # Here you can handle the version
     serializer_class = EventSerializer
     permission_classes = [AllowAny]  # Will make it publicly available (includes GET/POST/PUT/UPDATE)
+

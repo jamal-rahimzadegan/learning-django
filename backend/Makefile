@@ -12,7 +12,7 @@ UV := uv run
 # Django & Setup
 # ============================================================
 
-.PHONY: install lock requirements start start-prod test dev migrate
+.PHONY: install lock requirements start start-prod test migrate stripe-dev dev
 
 # Syncs the environment with pyproject.toml / uv.lock
 install:
@@ -35,12 +35,16 @@ start-prod:
 test:
 	$(UV) pytest -v
 
-dev: migrate start
 
 migrate:
 	$(UV) python manage.py makemigrations
 	$(UV) python manage.py migrate
 
+
+stripe-dev:
+	stripe listen --events checkout.session.completed --forward-to http://127.0.0.1:8000/events/webhooks/stripe/
+
+dev: migrate start
 # ============================================================
 # Celery
 # ============================================================
