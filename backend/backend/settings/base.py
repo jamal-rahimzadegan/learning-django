@@ -80,7 +80,6 @@ TEMPLATES = [
 
 # ── Database ─────────────────────────────────────────────────
 DATABASES = {
-    # TODO: move to .env
     "default": {
         "ENGINE": os.getenv("DEFAULT_DB_ENGINE"),
         "NAME": os.getenv("DEFAULT_DB_NAME"),
