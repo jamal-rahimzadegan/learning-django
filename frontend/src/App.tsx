@@ -8,6 +8,7 @@ import { checkIsLoggedIn } from './api/user.ts';
 import EventDetails from './pages/event-details.tsx';
 import PaymentSuccess from './pages/payment/success.tsx';
 import PaymentCancel from './pages/payment/cancel.tsx';
+import Tickets from './pages/tickets.tsx';
 
 export default function App() {
   const isLoggedIn = checkIsLoggedIn();
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/event/:id" element={<EventDetails />} />
         <Route path="/about" element={<About />} />
+        <Route path="/tickets" element={<Tickets />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
         {isLoggedIn ? null : <Route path="/login" element={<Login />} />}

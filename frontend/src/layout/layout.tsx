@@ -37,7 +37,15 @@ export default function Layout() {
               About
             </Link>
             {isLoggedIn ? (
-              <button onClick={logout}>Logout</button>
+              <>
+                <Link
+                  to="/tickets"
+                  className="text-gray-600 transition hover:text-gray-900"
+                >
+                  Tickets
+                </Link>
+                <button onClick={logout}>Logout</button>
+              </>
             ) : (
               <Link
                 to="/login"

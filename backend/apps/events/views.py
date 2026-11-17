@@ -23,7 +23,7 @@ from rest_framework.views import APIView
 
 from apps.events.forms import EventForm
 from .models import Event, SupportMessage, Ticket
-from .serializer import EventSerializer
+from .serializer import EventSerializer, TicketSerializer
 from .tasks import process_heavy_task
 
 
@@ -60,6 +60,8 @@ def event_list(request):
     # A simple print statement to prove when the view is actually running
     print("Fetching events from the database and rendering template...")
     return render(request, "events/pages/event_list.html", {"events": all_events})
+
+
 
 
 @never_cache
@@ -281,5 +283,10 @@ class EventsViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     # Here you can handle the version
     serializer_class = EventSerializer
-    permission_classes = [AllowAny]  # Will make it publicly available (includes GET/POST/PUT/UPDATE)
+    permission_classes = [AllowAny] # Will make it publicly available (includes GET/POST/PUT/UPDATE)
+
+class TicketsViewSet(viewsets.ModelViewSet):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+    permission_classes = [AllowAny]
 
