@@ -1,9 +1,46 @@
-# events/consumers.py
 import json
-from django.utils import timezone
-from channels.generic.websocket import AsyncWebsocketConsumer
+from datetime import datetime
+
+from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-from .models import SupportMessage
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.layers import get_channel_layer
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
+from ..models import SupportMessage
+
+
+def support(request):
+    if request.method == 'POST':
+        agent_text = request.POST.get('message', '').strip()
+
+        if agent_text:
+            # 1. Save agent message to Database
+            SupportMessage.objects.create(sender='agent', text=agent_text)
+
+            # 2. Push message to WebSocket group
+            channel_layer = get_channel_layer()
+            payload = {
+                "id": int(datetime.now().timestamp() * 1000),
+                "text": agent_text,
+                "sender": "agent",
+                "timestamp": datetime.now().strftime("%I:%M %p")
+            }
+
+            async_to_sync(channel_layer.group_send)(
+                "chat_support_room",
+                {
+                    "type": "chat_message",
+                    "message_data": payload
+                }
+            )
+
+        return redirect(request.path)
+
+    # Load message history ordered chronologically
+    messages = SupportMessage.objects.order_by('created_at')
+    return render(request, "events/pages/support.html", {'messages': messages})
 
 
 class SupportChatConsumer(AsyncWebsocketConsumer):
