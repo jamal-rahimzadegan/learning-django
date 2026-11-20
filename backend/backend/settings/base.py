@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # ── Paths & env ──────────────────────────────────────────────
@@ -8,11 +9,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env.local")
 load_dotenv(BASE_DIR / ".env")
 
+
 def env_bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
 
+
 def env_list(name: str, default: str = "") -> list[str]:
     return [v.strip() for v in os.getenv(name, default).split(",") if v.strip()]
+
 
 # ── Core ─────────────────────────────────────────────────────
 SECRET_KEY = os.environ["SECRET_KEY"]  # fail fast
@@ -24,7 +28,7 @@ WSGI_APPLICATION = "backend.wsgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
-FRONTEND_URL = os.environ.get("FRONTEND_URL","")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 # ── Apps ─────────────────────────────────────────────────────
 DJANGO_APPS = [
@@ -149,9 +153,17 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/minute",  # Public/unauthenticated traffic
+        "user": "200/minute",  # Logged-in traffic
+    },
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1500),# adjust in real world
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1500),  # adjust in real world
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
