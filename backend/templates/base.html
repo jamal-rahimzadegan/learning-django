@@ -5,79 +5,86 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>
-        {% block title %}
-        Social Events Dashboard
-        {% endblock %}
-    </title>
+    <title>{% block title %}Social Events Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}?v=1.1"/>
 </head>
 <body>
 <header>
-    <nav>
+    <nav class="p-3">
         <h1>Social Events Dashboard</h1>
-        <div class="d-flex flex-row justify-content-center list-unstyled gap-3 text-white">
+        <div class="d-flex flex-row justify-content-center align-items-center">
             <a href="/" class="btn btn-info btn-sm mr-2">Home</a>
             <a href="/events/list/" class="btn btn-info btn-sm mr-2">List Event</a>
             <a href="/events/support/" class="btn btn-info btn-sm mr-2">Support Tickets</a>
+
             {% if request.user.is_authenticated %}
-            <a href="/events/new/" class="btn btn-info btn-sm">New Event</a>
-<button type="submit" class="btn btn-danger">Yes, Log Out</button>
+                {% if request.user.is_staff %}
+                    <a href="{% url 'create_event' %}" class="btn btn-info btn-sm mr-2">New Event</a>
+                {% endif %}
+                <button type="button" id="open-logout-modal" class="btn btn-danger btn-sm">Log Out</button>
             {% else %}
-            <a href="/accounts/login_user/" class="mr-2">Login</a>
-            <a href="/accounts/register_user/" >Register</a>
+                <a href="/accounts/login_user/" class="btn btn-outline-light btn-sm mr-2">Login</a>
+                <a href="/accounts/register_user/" class="btn btn-light btn-sm">Register</a>
             {% endif %}
         </div>
 
         {% if request.user.is_authenticated %}
-        <span>Welcome, {{ request.user.username }}!</span>
+            <span class="d-block mt-2">Welcome, {{ request.user.username }}!</span>
         {% endif %}
     </nav>
 </header>
 
-<main>
-    {% block content %}
+<main class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
+    {% block content %}
     {% endblock %}
 </main>
 
 <!-- Logout Confirmation Modal -->
+{% if request.user.is_authenticated %}
 <dialog id="logout-dialog" class="logout-modal">
-    <div class="modal-content">
+    <div class="modal-content p-3">
         <h3>Confirm Logout</h3>
         <p>Are you sure you want to end your session?</p>
 
-        <div class="modal-actions">
-            <!-- Cancel closes the modal without submitting -->
-            <button type="button" id="cancel-logout" class="btn-secondary">Cancel</button>
+        <div class="modal-actions d-flex justify-content-end">
+            <button type="button" id="cancel-logout" class="btn btn-secondary btn-sm mr-2">Cancel</button>
 
-            <!-- The real Django POST logout form -->
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            <form action="{% url 'logout' %}" method="post" class="d-inline">
                 {% csrf_token %}
-                <button type="submit" class="btn-danger">Yes, Log Out</button>
+                <button type="submit" class="btn btn-danger btn-sm">Yes, Log Out</button>
             </form>
         </div>
     </div>
 </dialog>
-<!-- Logout Confirmation Modal (Hidden by default) -->
+{% endif %}
 
-<footer>
-    <p>&copy; 2026 My Website. All rights reserved.</p>
+<footer class="text-center mt-5">
+    <p>&copy; 2026 Social Events Dashboard. All rights reserved.</p>
 </footer>
-</body>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const dialog = document.getElementById('logout-dialog')
-    const openBtn = document.getElementById('open-logout-modal')
-    const cancelBtn = document.getElementById('cancel-logout')
+    const dialog = document.getElementById('logout-dialog');
+    const openBtn = document.getElementById('open-logout-modal');
+    const cancelBtn = document.getElementById('cancel-logout');
 
-    // Open modal on trigger click
-    openBtn.addEventListener('click', () => dialog.showModal())
-
-    // Close modal on cancel or ESC
-    cancelBtn.addEventListener('click', () => dialog.close())
+    if (dialog && openBtn && cancelBtn) {
+        openBtn.addEventListener('click', () => dialog.showModal());
+        cancelBtn.addEventListener('click', () => dialog.close());
+    }
 </script>
+</body>
 </html>

@@ -1,16 +1,13 @@
 from django import forms
 from django.contrib.auth import get_user_model
+
 from apps.events.models import Event
 
 User = get_user_model()
+
+
 class EventForm(forms.ModelForm):
-    # Create a dropdown field populated with users.
-    # This field is not part of the Events model, so we define it here.
-    organizer_user = forms.ModelChoiceField(
-        queryset=User.objects.all(),
-        label="Organizer",
-        required=True,
-    )
+    organizer_user = forms.ModelChoiceField(queryset=User.objects.none())
 
     class Meta:
         model = Event
@@ -24,7 +21,15 @@ class EventForm(forms.ModelForm):
             "price",
             "capacity",
         ]
+
         # Optional: Add a date/time picker widget for the start_time field
         widgets = {
             "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields["organizer_user"].queryset = User.objects.filter(
+                is_active=True
+            )

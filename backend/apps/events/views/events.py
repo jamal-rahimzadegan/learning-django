@@ -1,30 +1,32 @@
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
 from apps.events.forms import EventForm
 from ..models import Event
 
 
+@staff_member_required
+@require_http_methods(["GET", "POST"])
 @never_cache
-def create_event(request):
-    if request.method == "POST":
-        form = EventForm(request.POST)
-        if form.is_valid():
-            # Don't save to the DB yet, we need to add the organizer_id
-            event = form.save(commit=False)
-            # Get the selected user from the form's cleaned data
-            selected_user = form.cleaned_data["organizer_user"]
-            # Set the organizer_id on the event instance
-            event.organizer_id = selected_user.id
-            event.save()  # Now save the complete object to the database
-            messages.success(request, "Record successfully created!")
-            return redirect("create_event")  # Refresh the page or redirect elsewhere
-    else:
-        form = EventForm()
-    return render(request, "events/pages/create_event.html", {"form": form})
+def create_event(request: HttpRequest) -> HttpResponse:
+    form = EventForm(request.POST or None, user=request.user)
 
+    if request.method == "POST" and form.is_valid():
+        event = form.save(commit=False)
+        selected_user = form.cleaned_data["organizer_user"]
+        event.organizer_id = selected_user.id
+        event.save()
+
+        messages.success(request, "Record successfully created!")
+        return redirect("create_event")
+
+    return render(request, "events/pages/create_event.html", {"form": form})
 
 # @cache_page(60 * 15)  # caching it for 15 minutes
 @never_cache
