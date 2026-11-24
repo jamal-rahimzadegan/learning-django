@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
+from django.core.paginator import Paginator
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET
 
 from apps.events.forms import EventForm
 from ..models import Event
@@ -30,12 +31,10 @@ def create_event(request: HttpRequest) -> HttpResponse:
 
 # @cache_page(60 * 15)  # caching it for 15 minutes
 @never_cache
-def event_list(request):
+@require_GET
+def event_list(request: HttpRequest) -> HttpResponse:
     all_events = Event.objects.all()
-    # A simple print statement to prove when the view is actually running
-    print("Fetching events from the database and rendering template...")
     return render(request, "events/pages/event_list.html", {"events": all_events})
-
 
 @never_cache
 def event_details(request, event_id):

@@ -1,16 +1,31 @@
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from apps.events.models import Event, Ticket
 from .serializers import EventSerializer, TicketSerializer
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
-# API ViewSet for Event model
+
 class EventsViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
-    # Here you can handle the version
+    print('events api')
     serializer_class = EventSerializer
-    permission_classes = [AllowAny]  # Will make it publicly available (includes GET/POST/PUT/UPDATE)
+    # Allows anyone to GET, requires login for POST/PUT/PATCH/DELETE
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        # Deterministic ordering matches your composite DB index (-created_at, -id)
+        return (
+            Event.objects
+            .filter(status=Event.Status.PUBLISHED)
+            .select_related("organizer")
+            .order_by("-created_at", "-id")
+        )
 
 
 class TicketsViewSet(viewsets.ModelViewSet):

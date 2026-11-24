@@ -1,22 +1,43 @@
-from django.db import models
-from django.conf import settings
 import uuid
 
+from django.conf import settings
+from django.db import models
+
+
 class Event(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PUBLISHED = "published", "Published"
+        CANCELLED = "cancelled", "Cancelled"
+
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    organizer_id = models.BigIntegerField()
-    status = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="events",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    location = models.TextField(blank=True, null=True)
+    location = models.TextField(blank=True)
     start_time = models.DateTimeField(blank=True, null=True)
-    price = models.IntegerField()
-    capacity = models.IntegerField(blank=True, null=True)
+    price = models.PositiveIntegerField(help_text="Price in cents")
+    capacity = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         db_table = "events"
+        indexes = [
+            models.Index(
+                fields=["-created_at", "-id"],
+                name="events_created_id_idx",
+            ),
+        ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
 

@@ -12,7 +12,7 @@ UV := uv run
 # Django & Setup
 # ============================================================
 
-.PHONY: install lock requirements start start-prod test migrate stripe-dev dev
+.PHONY: install lock requirements start start-prod test migrate stripe-dev dev seed-events
 
 # Syncs the environment with pyproject.toml / uv.lock
 install:
@@ -44,7 +44,16 @@ migrate:
 stripe-dev:
 	stripe listen --events checkout.session.completed --forward-to http://127.0.0.1:8000/events/webhooks/stripe/
 
-dev: migrate start
+dev:
+	migrate start
+
+seed-events:
+	@read -p "Number of events to create [1000]: " count; \
+	count=$${count:-1000}; \
+	$(UV) python manage.py seed_events --count "$$count"
+
+
+
 # ============================================================
 # Celery
 # ============================================================
