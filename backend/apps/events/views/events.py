@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
-from django.core.paginator import Paginator
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render

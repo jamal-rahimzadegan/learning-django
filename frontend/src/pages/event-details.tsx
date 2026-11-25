@@ -1,4 +1,4 @@
-import { getEvents, type SocialEvent } from '../api/events.ts';
+import { getEventById, type SocialEvent } from '../api/events.ts';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import PageWrapper from '../layout/page-wrapper.tsx';
@@ -11,7 +11,7 @@ export default function EventDetails() {
   const { data: event, isFetching } = useQuery({
     enabled: !!id,
     queryKey: ['event', id],
-    queryFn: () => getEvents<SocialEvent>(id),
+    queryFn: () => getEventById<SocialEvent>(id),
   });
 
   const { isPending, mutateAsync: mutateCheckout } = useMutation({

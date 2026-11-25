@@ -1,13 +1,25 @@
 import { getEvents, type SocialEvent } from '../api/events.ts';
 import { Link } from 'react-router-dom';
 import PageWrapper from '../layout/page-wrapper.tsx';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { Button } from '../components/shared/button.tsx';
 
 export default function Home() {
-  const { data: events = [], isFetching } = useQuery({
-    queryKey: ['events'],
-    queryFn: () => getEvents<SocialEvent[]>(),
-  });
+  const getNextPageParam = (next: string) => {
+    if (!next) return undefined;
+    const url = new URL(next);
+    return Number(url.searchParams.get('page'));
+  };
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useInfiniteQuery({
+      queryKey: ['events'],
+      initialPageParam: 1,
+      queryFn: ({ pageParam }) => getEvents<SocialEvent>({ page: pageParam }),
+      getNextPageParam: (lastPage) => getNextPageParam(lastPage.next),
+    });
+
+  const events = data?.pages.flatMap((page) => page.results) ?? [];
 
   return (
     <PageWrapper
@@ -26,6 +38,11 @@ export default function Home() {
           </h3>
         </Link>
       ))}
+      {hasNextPage && (
+        <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+          {isFetchingNextPage ? 'Loading more...' : 'Load More'}
+        </Button>
+      )}
     </PageWrapper>
   );
 }
